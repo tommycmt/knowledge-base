@@ -32,6 +32,9 @@ function route(path) {
 		case 'search':
 			render(renderSearch());
 			return;
+		case 'export':
+			render('');
+			return;
 		default:
 			window.location = window.location.pathname + "#/view";
 	}

@@ -1,7 +1,6 @@
-var knowledges;
 var categories = new Set();
 var users = new Set();;
-
+knowledges = knowledges.map(obj => Object.assign(new Knowledge, obj));
 
 const renderNav = function() {
 	var knowledgeSet = new Set();
@@ -63,6 +62,10 @@ const renderViewKnowledge = function(index) {
 			<input type="text" class="form-control" id="input-index" value="${index}"></input>
 		</div>
 		<div class="col-md-12">
+			<label for="input-title" class="form-label">Title</label>
+			<input type="text" class="form-control" id="input-title" value="${title}"></input>
+		</div>
+		<div class="col-md-12">
 			<label for="input-description" class="form-label">Description</label>
 			<input type="text" class="form-control" id="input-description" value="${description}"></input>
 		</div>
@@ -94,6 +97,7 @@ const renderViewKnowledge = function(index) {
 
 const renderEditKnowledge = function(index) {
 	var knowledge = knowledges[index];
+
 	var title = knowledge.title;
 	var description = knowledge.description;
 	var link = knowledge.link;
@@ -104,12 +108,18 @@ const renderEditKnowledge = function(index) {
 	var modifiedBy = knowledge.modifiedBy;
 	var obsoleted = knowledge.obsoleted;
 	
+
+
 	var domElement = `
-<form>
+<form id="edit-knowledge-form">
 	<fieldset class="row g-3">
 		<div class="col-md-12">
 			<label for="input-index" class="form-label">Index</label>
 			<input type="text" class="form-control" id="input-index" value="${index}" disabled></input>
+		</div>
+		<div class="col-md-12">
+			<label for="input-title" class="form-label">Title</label>
+			<input type="text" class="form-control" id="input-title" value="${title}"></input>
 		</div>
 		<div class="col-md-12">
 			<label for="input-description" class="form-label">Description</label>
@@ -161,17 +171,50 @@ const renderEditKnowledge = function(index) {
 		</div>
 		<div class="col-md-3">
 			<label for="input-obsoleted" class="form-label">Obsoleted</label>
-			<input type="text" class="form-control" id="input-obsoleted" value="${obsoleted}"></input>
+			<div class="input-group mb-3">
+				<input id="input-obsoleted" type="text" class="form-control" value="${obsoleted}"></input>
+				<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+					<span class="visually-hidden">Toggle Dropdown</span>
+				</button>
+				<ul class="dropdown-menu">
+					<li><a class="dropdown-item" onclick="document.getElementById('input-obsoleted').value = this.innerText">${obsoleted}</a></li>
+					<li><a class="dropdown-item" onclick="document.getElementById('input-obsoleted').value = this.innerText">${!obsoleted}</a></li>
+				</ul>
+			</div>
 		</div>
 	</fieldset>
   <div class="col-12">
-    <a class="btn btn-primary" style="margin-top:10px" href="#/edit/${index}" role="button">Edit</a>
+    <a class="btn btn-primary" type style="margin-top:10px" onclick="exportKnowledge()" role="button">Export</a>
   </div>
 </form>
+<textarea id="knowledge-json" style="width:100%; height: 100px; margin-top: 10px; display: none;">
+</textarea>
 `;
 	
 	return domElement;
 };
+
+const exportKnowledge = function() {
+	var form = document.getElementById('edit-knowledge-form')[0];
+	var index = form.elements['input-index'].value;
+	var title = form.elements['input-title'].value;
+	var description = form.elements['input-description'].value;
+	var keywords = form.elements['input-keywords'].value.split(', ');
+	var category = form.elements['input-category'].value;
+	var modifiedBy = form.elements['input-modifiedBy'].value;
+	var obsoleted = form.elements['input-obsoleted'].value;
+	
+	var createdDate = knowledges[index].createdDate || new Date();
+	var lastModifiedDate = new Date();
+	var link = knowledges[index].link;
+	
+	k = new Knowledge(index, title, description,keywords, link, category, createdDate, lastModifiedDate, modifiedBy, obsoleted);
+
+	knowledges[k.index] = k;
+
+	document.getElementById("knowledge-json").style.display = "inline-block";
+	document.getElementById("knowledge-json").value = `var knowledges = [${knowledges.map(obj => obj.toString()).join(",")}]`;	
+}
 
 const renderView = function(path) {
 };
