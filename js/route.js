@@ -15,12 +15,12 @@ function new_viewer() {
 	);
 }
 
-function new_editor() {
+function new_editor(id) {
 	simplemde = new SimpleMDE(
 		{ 
 			autosave: {
 				enabled: true,
-				uniqueId: "knowledge-base",
+				uniqueId: id,
 				delay: 10000,
 			},
 			showIcons: ["code", "table", "horizontal-rule"],
@@ -57,10 +57,13 @@ function route(path) {
 		case 'edit':
 			var index = target[1];
 			render(renderEditKnowledge(index));
-			new_editor();
+			new_editor(index);
 			return;
 		case 'create':
-			render(renderCreate());
+			var obj = renderCreate();
+
+			render(obj.domElement);
+			new_editor(obj.index);
 			return;
 		case 'search':
 			render(renderSearch());
