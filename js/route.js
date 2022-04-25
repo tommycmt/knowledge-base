@@ -5,6 +5,37 @@
 // #/search
 // #/search/a+b+c
 
+
+function new_viewer() {
+	simplemde = new SimpleMDE(
+		{ 
+			toolbar: false,
+			element: document.getElementById("knowledge-md-editor") 
+		}
+	);
+}
+
+function new_editor() {
+	simplemde = new SimpleMDE(
+		{ 
+			autosave: {
+				enabled: true,
+				uniqueId: "knowledge-base",
+				delay: 10000,
+			},
+			showIcons: ["code", "table", "horizontal-rule"],
+	
+			//insertTexts: {
+			//	image: ["![](\\\\imdntsfas3\\tsb1$\\imdfdbdev1\\(TS)D1\\Helpdesk\\", ")"],
+			//},
+			promptURLs : true,
+			spellcheck: false,
+			element: document.getElementById("knowledge-md-editor") 
+		}
+	);
+}
+
+
 function route(path) {
 	path = path.replace(/^#\//, '');
 	target = path.split('/');
@@ -20,11 +51,13 @@ function route(path) {
 				render(renderViewCategory(category));
 			} else {
 				render(renderViewKnowledge(index));
+				new_viewer();
 			}
 			return;
 		case 'edit':
 			var index = target[1];
 			render(renderEditKnowledge(index));
+			new_editor();
 			return;
 		case 'create':
 			render(renderCreate());

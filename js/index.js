@@ -1,6 +1,8 @@
 var categories = new Set();
 var users = new Set();;
 knowledges = knowledges.map(obj => Object.assign(new Knowledge, obj));
+var simplemde;
+
 
 const renderNav = function() {
 	var knowledgeSet = new Set();
@@ -49,6 +51,8 @@ const renderViewKnowledge = function(index) {
 	var link = knowledge.link;
 	var keywords = knowledge.keywords;
 	var category = knowledge.category;
+	var content = knowledge.content;
+
 	var createdDate = knowledge.createdDate;
 	var lastModifiedDate = knowledge.lastModifiedDate;
 	var modifiedBy = knowledge.modifiedBy;
@@ -86,6 +90,7 @@ const renderViewKnowledge = function(index) {
 			<input type="text" class="form-control" id="input-obsoleted" value="${obsoleted}"></input>
 		</div>
 	</fieldset>
+	<textarea id="knowledge-md-editor">${content}</textarea>
   <div class="col-12">
     <a class="btn btn-primary" style="margin-top:10px" href="#/edit/${index}" role="button">Edit</a>
   </div>
@@ -103,6 +108,8 @@ const renderEditKnowledge = function(index) {
 	var link = knowledge.link;
 	var keywords = knowledge.keywords;
 	var category = knowledge.category;
+	var content = knowledge.content;
+
 	var createdDate = knowledge.createdDate;
 	var lastModifiedDate = knowledge.lastModifiedDate;
 	var modifiedBy = knowledge.modifiedBy;
@@ -183,6 +190,8 @@ const renderEditKnowledge = function(index) {
 			</div>
 		</div>
 	</fieldset>
+	
+	<textarea id="knowledge-md-editor">${content}</textarea>
   <div class="col-12">
     <a class="btn btn-primary" type style="margin-top:10px" onclick="exportKnowledge()" role="button">Export</a>
   </div>
@@ -190,7 +199,6 @@ const renderEditKnowledge = function(index) {
 <textarea id="knowledge-json" style="width:100%; height: 100px; margin-top: 10px; display: none;">
 </textarea>
 `;
-	
 	return domElement;
 };
 
@@ -201,6 +209,8 @@ const exportKnowledge = function() {
 	var description = form.elements['input-description'].value;
 	var keywords = form.elements['input-keywords'].value.split(', ');
 	var category = form.elements['input-category'].value;
+	var content = simplemde.value();
+
 	var modifiedBy = form.elements['input-modifiedBy'].value;
 	var obsoleted = form.elements['input-obsoleted'].value;
 	
@@ -208,18 +218,129 @@ const exportKnowledge = function() {
 	var lastModifiedDate = new Date();
 	var link = knowledges[index].link;
 	
-	k = new Knowledge(index, title, description,keywords, link, category, createdDate, lastModifiedDate, modifiedBy, obsoleted);
+	k = new Knowledge(index, title, description,keywords, link, category, content, createdDate, lastModifiedDate, modifiedBy, obsoleted);
 
 	knowledges[k.index] = k;
 
 	document.getElementById("knowledge-json").style.display = "inline-block";
-	document.getElementById("knowledge-json").value = `var knowledges = [${knowledges.map(obj => obj.toString()).join(",")}]`;	
+	document.getElementById("knowledge-json").value = `var knowledges = [${knowledges.map(obj => obj.toString()).join(",")}]`;
+	
+	var a = document.createElement("a");
+	a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(document.getElementById("knowledge-json").value));
+	a.setAttribute('download', "knowledges.js");
+	document.body.appendChild(a);
+	a.style.display = 'none'
+	document.body.appendChild(a);
+  
+	a.click();
+  
+	document.body.removeChild(a);
 }
 
 const renderView = function(path) {
 };
 
 const renderCreate = function(path) {
+	var knowledge = knowledges[index];
+
+	var title = knowledge.title;
+	var description = knowledge.description;
+	var link = knowledge.link;
+	var keywords = knowledge.keywords;
+	var category = knowledge.category;
+	var content = knowledge.content;
+
+	var createdDate = knowledge.createdDate;
+	var lastModifiedDate = knowledge.lastModifiedDate;
+	var modifiedBy = knowledge.modifiedBy;
+	var obsoleted = knowledge.obsoleted;
+	
+
+
+	var domElement = `
+<form id="edit-knowledge-form">
+	<fieldset class="row g-3">
+		<div class="col-md-12">
+			<label for="input-index" class="form-label">Index</label>
+			<input type="text" class="form-control" id="input-index" value="${index}" disabled></input>
+		</div>
+		<div class="col-md-12">
+			<label for="input-title" class="form-label">Title</label>
+			<input type="text" class="form-control" id="input-title" value="${title}"></input>
+		</div>
+		<div class="col-md-12">
+			<label for="input-description" class="form-label">Description</label>
+			<input type="text" class="form-control" id="input-description" value="${description}"></input>
+		</div>
+		<div class="col-md-12">
+			<label for="input-keywords" class="form-label">keywords</label>
+			<input type="text" class="form-control" id="input-keywords" value="${keywords.join(', ')}"></input>
+		</div>
+		<div class="col-md-3">
+			<label for="input-category" class="form-label">Category</label>
+			<div class="input-group mb-3">
+				<input id="input-category" type="text" class="form-control" value="${category}"></input>
+				<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+					<span class="visually-hidden">Toggle Dropdown</span>
+				</button>
+				<ul class="dropdown-menu">`;
+				
+	categories.forEach(function(category) {
+			domElement += 
+				 `<li><a class="dropdown-item" onclick="document.getElementById('input-category').value = this.innerText">${category}</a></li>`;
+	});
+	
+		domElement +=
+				 `<li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" onclick="document.getElementById('input-category').value = ''">New</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<label for="input-modifiedBy" class="form-label">Modified By</label>
+			<div class="input-group mb-3">
+				<input id="input-modifiedBy" type="text" class="form-control" value="${modifiedBy}"></input>
+				<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+					<span class="visually-hidden">Toggle Dropdown</span>
+				</button>
+				<ul class="dropdown-menu">`;
+				
+	users.forEach(function(user) {
+			domElement += 
+				 `<li><a class="dropdown-item" onclick="document.getElementById('input-modifiedBy').value = this.innerText">${modifiedBy}</a></li>`;
+	});
+	
+		domElement +=
+				 `<li><hr class="dropdown-divider"></li>
+				  <li><a class="dropdown-item" onclick="document.getElementById('input-modifiedBy').value = ''">New</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<label for="input-obsoleted" class="form-label">Obsoleted</label>
+			<div class="input-group mb-3">
+				<input id="input-obsoleted" type="text" class="form-control" value="${obsoleted}"></input>
+				<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+					<span class="visually-hidden">Toggle Dropdown</span>
+				</button>
+				<ul class="dropdown-menu">
+					<li><a class="dropdown-item" onclick="document.getElementById('input-obsoleted').value = this.innerText">${obsoleted}</a></li>
+					<li><a class="dropdown-item" onclick="document.getElementById('input-obsoleted').value = this.innerText">${!obsoleted}</a></li>
+				</ul>
+			</div>
+		</div>
+	</fieldset>
+	
+	<textarea id="knowledge-md-editor">${content}</textarea>
+  <div class="col-12">
+    <a class="btn btn-primary" type style="margin-top:10px" onclick="exportKnowledge()" role="button">Export</a>
+  </div>
+</form>
+<textarea id="knowledge-json" style="width:100%; height: 100px; margin-top: 10px; display: none;">
+</textarea>
+`;
+
+
 };
 
 const renderSearch = function(path) {

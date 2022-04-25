@@ -69,3 +69,7 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
 #custom-button-bar *{
   margin-right: 10px;
 }
+
+.CodeMirror, .CodeMirror-scroll {
+	min-height: 200px;
+}
